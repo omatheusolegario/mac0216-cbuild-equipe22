@@ -1,4 +1,4 @@
-#!/opt/homebrew/lib/bash
+#!/opt/homebrew/bin/bash
 
 PROJECT_DIR="$PWD/tests/mgolegario"
 BUILD_DIR="$PROJECT_DIR/build"
