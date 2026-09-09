@@ -89,6 +89,10 @@ build_project(){
         fi
 
         debug_msg "DEBUG: Checando se ou o .c ou suas dependências foram atualizadas..."
+
+        local arquivo_fonte_formatado_make="${arquivo_fonte// /\\ }"
+        local caminho_obj_formatado_make="${caminho_obj// /\\ }"
+        local caminho_dep_formatado_make="${caminho_dep// /\\ }"
         #Utiliza o próprio make para saber se ou o .c ou suas dependências foram atualizadas, e se sim precisa compilar.
         if [[ $precisa_compilar -eq 0 ]]; then
             #Justamente o controle de status (precisa atualizar ou não)
@@ -97,8 +101,8 @@ build_project(){
             #Chama o make dentro do bash, com -Rr para desativar regras e variáveis implícitas do make não desejadas,
             # -f seguido de - para dizer que o make vai ler o stdin, e o -q para o make apenas dizer se precisa ou não atualizar
             make -Rr -f - -q "$caminho_obj" <<EOF || status_make=$?
-$caminho_obj: $arquivo_fonte ; @:
-include $caminho_dep
+$caminho_obj_formatado_make: $arquivo_fonte_formatado_make ; @:
+include $caminho_dep_formatado_make
 EOF
             
             debug_msg "DEBUG: status_make: $status_make"
