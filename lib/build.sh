@@ -34,6 +34,7 @@ build_project() {
         local caminho_relativo="${fonte#"$PROJECT_DIR/"}"
         local nome_base="${caminho_relativo%.c}"
         local nome_objeto="$BUILD_DIR/${nome_base}.o"
+        local nome_dep = "$BUILD_DIR/${nome_base}.d"
         objetos+=("$nome_objeto")
 
         if ! mkdir -p "$(dirname "$nome_objeto")"; then
@@ -43,49 +44,29 @@ build_project() {
 
         local precisa_compilar="$forcar_recompilacao"
 
-
-        #cria uma lista de todos .h que estão na fonte do loop atual
-        local local_dependencias="$BUILD_DIR/${nome_base}_headers.txt"
-
-        local saida_dependencias;
-
-        if ! saida_dependencias=$(gcc -MM -I "$PROJECT_DIR/include" -O"$OPT_LEVEL" "$fonte"); then
-            echo "Erro ao listar dependências de $fonte: $saida_dependencias" >&2
-            return 1
-        fi
-
-        echo "$saida_dependencias" | sed 's/^[^:]*://' | sed -E 's/(\.(h|c)) [[:space:]]*/\1\n/g' > "$BUILD_DIR/${nome_base}_headers.txt"
-
-        if [[ $? -ne 0 ]]; then
-            echo "Erro ao listar dependências de $fonte"
-            return 1
-        fi
-
-        mapfile -t dependencias < "$local_dependencias"
         
-        #verifica se o objeto existe, depois se o fonte é mais recente que o 
-        #objeto e por fim se algum dos includes é mais novo que o objeto
-        if [[ ! -f "$nome_objeto" ]]; then
-            precisa_compilar=1
-        elif [[ "$fonte" -nt "$nome_objeto" ]]; then
-            precisa_compilar=1
-        else
-            for dependencia in "${dependencias[@]}"; do
-                if [[ "$dependencia" -nt "$nome_objeto" ]]; then
-                    precisa_compilar=1
-                    break
-                fi
-            done
+        if [[ $precisa_compilar -eq 0 ]]; then
+            if ! make -f - -q 2>dev/null <<
+            EOF
+            OBJ := $nome_objeto
+            SRC := $fonte
+            DEP := $nome_dep
+
+            \$(OBJ): \$(SRC)
+            -include \$(DEP)
+            EOF
+            then
+                precisa_compilar=1
+            fi
         fi
 
-        rm -f "$local_dependencias"
 
         #se precisa compilar, compila o fonte para objeto
         if [[ $precisa_compilar -eq 1 ]]; then
             echo "Compilando $fonte..."
-            gcc -c -I "$PROJECT_DIR/include" "$fonte" -O"$OPT_LEVEL" -o "$nome_objeto"
+            gcc -c -I "$PROJECT_DIR/include" --MMD -MP "$fonte" -O"$OPT_LEVEL" -o "$nome_objeto"
             if [[ $? -ne 0 ]]; then
-                echo "Erro ao compilar $fonte"
+                echo "Erro ao compilar $fonte" >&2
                 return 1
             fi
         else
