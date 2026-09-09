@@ -1,99 +1,155 @@
-build_project() {
+build_project(){
 
-    #verifica se o gcc existe no sistema
-    if command -v gcc >/dev/null 2>&1; then
-        echo "GCC encontrado."
+    #Confere se o gcc existe no sistema
+    debug_msg "DEBUG: Conferindo se o gcc existe no sistema..."
+    if command -v gcc>/dev/null 2>&1; then
+        verbose_msg "GCC encontrado."
     else
-        echo "Erro: Compilador GCC não encontrado. Por favor, instale o GCC para continuar."
+        echo "Erro: GCC não encontrado. Por favor instale o GCC para continuar." >&2
+        return 1
+    fi 
+
+    #Confere se o make existe no sistema
+    debug_msg "DEBUG: Conferindo se o make existe no sistema..."
+    if command -v make >/dev/null 2>&1; then
+        verbose_msg "Make encontrado."
+    else
+        echo "Erro: Make não encontrado. Por favor instale o Make para coninuar" >&2
         return 1
     fi
-    
-    #verifica se existem arquivos fonte
+
+    debug_msg "DEBUG: Conferindo se existem arquivos fonte..."
+    #Confere se existem arquivos fonte
     if [[ ${#SOURCE_FILES[@]} -eq 0 ]]; then
-        echo "Nenhum arquivo fonte especificado." >&2
+        echo "Não há arquivos fonte especificados" >&2
         return 1
     fi
+    debug_msg "DEBUG: Existem arquivos fonte."
 
+    #Array para armazenar os arquivos objeto
+    local objetos=()
 
-    #array para armazenar os arquivos .o
-    local -a objetos=()
-    local forcar_recompilacao=0
+    #Verificação de mudança de flag de otimização
+    local forcar_recompilacao=0;
 
-   #verifica se mudaram as flags de optimização
+    debug_msg "DEBUG: Conferindo se o nível de otimização mudou..."
+
     if [[ ! -f "$BUILD_DIR/OPT_LEVEL.txt" || "$(<"$BUILD_DIR/OPT_LEVEL.txt")" != "$OPT_LEVEL" ]]; then
-            echo "Nível de otimização mudou. Forçando recompilação de todos os arquivos fonte."
-            forcar_recompilacao=1
-            if ! rm -f "$BUILD_DIR/OPT_LEVEL.txt"; then
-                echo "Erro ao remover arquivo de nível de otimização antigo" >&2
-                return 1
-            fi
-    fi
-    
-    local fonte
-
-    for fonte in "${SOURCE_FILES[@]}"; do
-        #atribui um nome base único para cada fonte, de acordo com seu caminho relativo
-        local caminho_relativo="${fonte#"$PROJECT_DIR/"}"
-        local nome_base="${caminho_relativo%.c}"
-        local nome_objeto="$BUILD_DIR/${nome_base}.o"
-        local nome_dep="$BUILD_DIR/${nome_base}.d"
-        objetos+=("$nome_objeto")
-
-        if ! mkdir -p "$(dirname "$nome_objeto")"; then
-            echo "Erro ao criar diretório para $nome_objeto" >&2
+        verbose_msg "O nível de otimização mudou. Forçando recompilação de todos arquivos."
+        forcar_recompilacao=1
+        if ! rm -f "$BUILD_DIR/OPT_LEVEL.txt"; then
+            echo "Erro: Falha ao tentar remover arquivo de nível de otimização antigo." >&2
             return 1
         fi
+    else
+        debug_msg "DEBUG: O nível de otimização não mudou."
+    fi
 
+    #Itera cada arquivo fonte, e verifica se é necessária uma compilação dele
+    local arquivo_fonte
+
+    debug_msg "DEBUG: Entrando na iteração de arquivos fonte..."
+    for arquivo_fonte in "${SOURCE_FILES[@]}"; do
+        
+        debug_msg "DEBUG: Arquivo fonte atual: $arquivo_fonte"
+
+        #Atribuição de nomes únicos ao objeto e dependência em build
+        local caminho_relativo="${arquivo_fonte#"$PROJECT_DIR/"}"
+        local nome_unico="${caminho_relativo%.c}"
+        local caminho_obj="$BUILD_DIR/${nome_unico}.o"
+        local caminho_dep="$BUILD_DIR/${nome_unico}.d"
+
+        debug_msg "DEBUG: caminho_relativo: $caminho_relativo"
+        debug_msg "DEBUG: nome_unico: $nome_unico"
+        debug_msg "DEBUG: caminho_obj: $caminho_obj"
+        debug_msg "DEBUG: caminho_dep: $caminho_dep"
+        
+        #Adiciona a lista de objetos o caminho do objeto do arquivo fonte atual
+        objetos+=("$caminho_obj")
+        debug_msg "DEBUG: objetos: ${objetos[*]}"
+
+        debug_msg "DEBUG: Criando diretório do objeto em $caminho_obj..."
+        #Cria o diretório onde o objeto vai ficar dentro de $BUILD_DIR, pois preservamos as "/" no nome único
+        if ! mkdir -p "$(dirname "$caminho_obj")"; then
+            echo "Erro: Não foi possível criar o diretório do objeto." >&2
+            return 1
+        fi  
+        debug_msg "DEBUG: Diretório do objeto criado."
+
+        #Variável binária (0 ou 1), que decide se é necessário compilar, iniciada com o valor de forçar recompilação que também é binária (0 ou 1)
         local precisa_compilar="$forcar_recompilacao"
+        debug_msg "DEBUG: precisa_compilar: $precisa_compilar"
 
-        if [[ ! -f "$nome_objeto" || ! -f "$nome_dep" ]] ; then
+        debug_msg "DEBUG: Checando se não existe o objeto ou a dependência..."
+        #Checagem para ver se não existe ou o objeto ou a dependência
+        if [[ ! -f "$caminho_obj" || ! -f "$caminho_dep" ]]; then
             precisa_compilar=1
+        else
+            debug_msg "DEBUG: Existem ambos."
         fi
 
+        debug_msg "DEBUG: Checando se ou o .c ou suas dependências foram atualizadas..."
+        #Utiliza o próprio make para saber se ou o .c ou suas dependências foram atualizadas, e se sim precisa compilar.
         if [[ $precisa_compilar -eq 0 ]]; then
+            #Justamente o controle de status (precisa atualizar ou não)
             local status_make=0
 
-            make -Rr -f - -q "$nome_objeto" <<EOF || status_make=$?
-$nome_objeto: $fonte ; @:
-include $nome_dep
+            #Chama o make dentro do bash, com -Rr para desativar regras e variáveis implícitas do make não desejadas,
+            # -f seguido de - para dizer que o make vai ler o stdin, e o -q para o make apenas dizer se precisa ou não atualizar
+            make -Rr -f - -q "$caminho_obj" <<EOF || status_make=$?
+$caminho_obj: $arquivo_fonte ; @:
+include $caminho_dep
 EOF
-
+            
+            debug_msg "DEBUG: status_make: $status_make"
             case $status_make in
-                0) precisa_compilar=0 ;;
-                1) precisa_compilar=1 ;;
-                *) 
-                echo "Erro ao verificar dependências com make" >&2
-                return 1 
+            0) precisa_compilar=0 ;;
+            1) precisa_compilar=1 ;;
+            *)
+                echo "Erro: Não foi possível verificar as dependências com o make." >&2
+                return 1
                 ;;
             esac
         fi
 
-
-        #se precisa compilar, compila o fonte para objeto
+        #Se precisa compilar, chama o gcc e compila o arquivo fonte atual
         if [[ $precisa_compilar -eq 1 ]]; then
-            echo "Compilando $fonte..."
-            gcc -c -I "$PROJECT_DIR/include" -MMD -MP "$fonte" -O"$OPT_LEVEL" -o "$nome_objeto"
+            verbose_msg "Compilando $arquivo_fonte..."
+
+            # -c para compilar até o arquivo de objeto, -I para especificar onde o compilador pode buscar por cabeçalhos,
+            # -MMD para gerar um arquivo de dependências locais, -MP para o make não falhar com dependências antigas,
+            # -O para o nível de otimização e -o para especificar o caminho do objeto gerado
+            gcc -c -I "$PROJECT_DIR/include" -MMD -MP "$arquivo_fonte" -O"$OPT_LEVEL" -o "$caminho_obj"
+
             if [[ $? -ne 0 ]]; then
-                echo "Erro ao compilar $fonte" >&2
+                echo "Erro: Não foi possível compilar o arquivo fonte" >&2
                 return 1
             fi
+
         else
-            echo "Arquivo objeto $nome_objeto está atualizado."
+            verbose_msg "O arquivo objeto $caminho_obj está atualizado"
         fi
     done
-    
-    #linka todos objeto para criar o executavel
-    echo "Linkando arquivos objeto..."
+    debug_msg "DEBUG: Finalizada a iteração de arquivos fonte."
+
+    #Depois de conferir se cada arquivo fonte está atualizado, agora é feito o ligamento entre os objetos
+    verbose_msg "Ligando arquivos objeto..."
+
     gcc "${objetos[@]}" -o "$EXECUTABLE"
+
     if [[ $? -ne 0 ]]; then
-        echo "Erro ao linkar arquivos objeto"
+        echo "Erro: Não foi possível ligar os arquivos objeto" >&2
         return 1
-    fi 
-
-    if ! echo "$OPT_LEVEL" > "$BUILD_DIR/OPT_LEVEL.txt"; then
-        echo "Erro ao salvar nível de otimização" >&2
+    elif ! echo "$OPT_LEVEL" > "$BUILD_DIR/OPT_LEVEL.txt"; then
+        echo "Erro: Não foi possível salvar o nível de otimização" >&2
         return 1
+    else
+        if ! record_event build; then
+            echo "Erro: Não foi possível guardar o evento de Build." >&2
+            return 1
+        else
+            echo "Build concluída com sucesso. O executável está disponível em $EXECUTABLE"
+            return 0
+        fi
     fi
-
-    echo "Build concluído com sucesso. Executável: $EXECUTABLE"
 }
