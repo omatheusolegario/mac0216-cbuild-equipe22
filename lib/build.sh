@@ -34,7 +34,7 @@ build_project() {
         local caminho_relativo="${fonte#"$PROJECT_DIR/"}"
         local nome_base="${caminho_relativo%.c}"
         local nome_objeto="$BUILD_DIR/${nome_base}.o"
-        local nome_dep = "$BUILD_DIR/${nome_base}.d"
+        local nome_dep="$BUILD_DIR/${nome_base}.d"
         objetos+=("$nome_objeto")
 
         if ! mkdir -p "$(dirname "$nome_objeto")"; then
@@ -44,6 +44,9 @@ build_project() {
 
         local precisa_compilar="$forcar_recompilacao"
 
+        if [[ ! -f "$nome_objeto" || ! -f "$nome_dep" ]] ; then
+            precisa_compilar=1
+        fi
         
         if [[ $precisa_compilar -eq 0 ]]; then
             if ! make -f - -q 2>dev/null <<
@@ -64,7 +67,7 @@ build_project() {
         #se precisa compilar, compila o fonte para objeto
         if [[ $precisa_compilar -eq 1 ]]; then
             echo "Compilando $fonte..."
-            gcc -c -I "$PROJECT_DIR/include" --MMD -MP "$fonte" -O"$OPT_LEVEL" -o "$nome_objeto"
+            gcc -c -I "$PROJECT_DIR/include" -MMD -MP "$fonte" -O"$OPT_LEVEL" -o "$nome_objeto"
             if [[ $? -ne 0 ]]; then
                 echo "Erro ao compilar $fonte" >&2
                 return 1
