@@ -28,6 +28,8 @@ build_project() {
                 return 1
             fi
     fi
+    
+    local fonte
 
     for fonte in "${SOURCE_FILES[@]}"; do
         #atribui um nome base único para cada fonte, de acordo com seu caminho relativo
@@ -47,20 +49,23 @@ build_project() {
         if [[ ! -f "$nome_objeto" || ! -f "$nome_dep" ]] ; then
             precisa_compilar=1
         fi
-        
-        if [[ $precisa_compilar -eq 0 ]]; then
-            if ! make -f - -q 2>dev/null <<
-            EOF
-            OBJ := $nome_objeto
-            SRC := $fonte
-            DEP := $nome_dep
 
-            \$(OBJ): \$(SRC)
-            -include \$(DEP)
-            EOF
-            then
-                precisa_compilar=1
-            fi
+        if [[ $precisa_compilar -eq 0 ]]; then
+            local status_make=0
+
+            make -Rr -f - -q "$nome_objeto" <<EOF || status_make=$?
+$nome_objeto: $fonte ; @:
+include $nome_dep
+EOF
+
+            case $status_make in
+                0) precisa_compilar=0 ;;
+                1) precisa_compilar=1 ;;
+                *) 
+                echo "Erro ao verificar dependências com make" >&2
+                return 1 
+                ;;
+            esac
         fi
 
 
