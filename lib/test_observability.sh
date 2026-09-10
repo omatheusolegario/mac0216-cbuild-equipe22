@@ -12,7 +12,8 @@ HEADER_FILES=("$PROJECT_DIR/include/operacoes.h")
 mkdir -p "$BUILD_DIR" "$LOG_DIR"
 
 source ./lib/observability.sh
-show_info
 
+# show_info
 # log_begin "build"
 # log_end "0"
+# generate_report

@@ -1,0 +1,8 @@
+Relatório das operações
+
+Total de operações: 13
+Operações bem sucedidas: 10
+Operações fracassadas: 3
+
+Compilações: 8
+Execuções: 1
