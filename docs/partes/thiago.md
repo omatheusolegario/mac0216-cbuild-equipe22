@@ -97,3 +97,5 @@ Fiquei confuso porque eu já tinha importado a clean_project original no começo
 Depois entendi que a função "mock" substitui a original apenas enquanto aquele teste está rodando. Por isso, coloquei os mocks só depois de terminar os testes da clean_project verdadeira.
 
 Essa parte foi mais fácil de programar. A parte mais chatinha foi entender como usar os mocks e como testar a ordem das funções.
+
+OBS: Decidi alterar a mensagem de alguns commits do git, e aí tive que alterar o arquivo do commit, e com isso forcei todos os commits denovo... e aí o horário deles acabou alterando todos para o mesmo (pois fez todos de novo ao mesmo tempo, pelo que entendi, ao trocar a mensagem do commit).
