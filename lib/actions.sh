@@ -32,6 +32,7 @@ run_project() {
     # Criei uma variavel local para ver o status
     local status
 
+    # Executa o arquivo, e se ser certo, coloca status como 0.
     if "$EXECUTABLE"; then
         status=0
     else
@@ -48,7 +49,7 @@ run_project() {
     # Se nao funcionar, a função retorna o código de erro, que vai
     # indicar que nao foi possível rodar record_event
         status=$?
-        printf 'Erro: não foi possível registrar a execução.\n' >&2
+        printf 'Erro: o programa foi executado, mas não foi possível registrar o evento.\n' >&2
         return "$status"
     fi
 }
