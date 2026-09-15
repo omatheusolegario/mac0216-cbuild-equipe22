@@ -10,7 +10,7 @@
 
 Fiz inicialmente o esqueleto delas no arquivo actions.sh.
 
-## Commit 1 
+## Parte 1 - função run_project
 Criei a função run_project com a verificação de erros, se o executável
 existe, se tem permissão de execuçao, se é um arquivo executável mesmo, e 
 se o path para o arquivo está correto. 
@@ -28,13 +28,13 @@ e record_event() de forma "mock" para poder usar na função original e fazer
 testes dela. 
 Fiz 5 testes, um para cada erro que eu "setei" na função original.
 
-## Commit 1.5
+## Parte 1.5 (revisão)
 
 Fiz algumas mudanças na ultima parte da função para ficar mais claro que 
 pode ocorrer a execução do $EXECUTABLE mas falhar apenas o registro 
 em record_event. 
 
-## Commit 2
+## Parte 2 - função clean_project
 Depois, comecei a implementar a função clean_project.
 
 Pensei nela como uma função que primeiro precisa ter certeza de que está apagando o lugar certo e, só depois disso, pode realmente apagar os arquivos da compilação.
@@ -46,6 +46,8 @@ Se a pasta build não existir, decidi que a função simplesmente retorna 0, por
 Se a pasta existir, uso: rm -rf -- "$BUILD_DIR" para apagar os arquivos da compilação.
 
 Tive um pouco de dificuldade para entender como conferir se BUILD_DIR estava realmente dentro de PROJECT_DIR. Também fiquei com receio de usar rm -rf, porque eu sabia que esse comando poderia apagar coisas importantes se recebesse um caminho errado. Por isso, preferi fazer várias verificações antes de executar o comando.
+
+## Parte 2.5 - revisão da função
 
 Depois de revisar melhor a função, percebi alguns casos que eu não tinha pensado.
 
