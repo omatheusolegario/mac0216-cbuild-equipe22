@@ -35,6 +35,7 @@ pode ocorrer a execução do $EXECUTABLE mas falhar apenas o registro
 em record_event. 
 
 ## Parte 2 - função clean_project
+
 Depois, comecei a implementar a função clean_project.
 
 Pensei nela como uma função que primeiro precisa ter certeza de que está apagando o lugar certo e, só depois disso, pode realmente apagar os arquivos da compilação.
@@ -59,3 +60,40 @@ Pensei no que aconteceria se BUILD_DIR apontasse para um arquivo em vez de uma p
 Percebi que também precisava tomar cuidado com a pasta de logs. Se, por algum erro, LOG_DIR estivesse dentro de BUILD_DIR, o clean poderia apagar o histórico do programa. Então coloquei mais uma verificação para impedir isso.
 
 A maior dificuldade nessa parte foi pensar nos casos em que o caminho poderia estar errado. A lógica de apagar a pasta era simples, mas fazer isso de uma forma segura acabou exigindo mais verificações do que eu queria ter feito.
+
+
+## Parte 3 - função rebuild_project
+
+Implementei a função rebuild_project.
+
+Essa foi mais fácil de fazer, porque a lógica era bem mais simples. Ela só precisa chamar clean_project e depois build_project.
+
+Fiz primeiro um if chamando clean_project. Se der erro, guardo o status e retorno esse mesmo erro. Assim, build_project não é chamada se a limpeza falhar.
+
+Se clean_project funcionar, a função chama build_project. Se a compilação funcionar, retorna 0. Se der erro, retorna o status da própria build_project.
+
+Não coloquei a lógica de compilação novamente dentro de rebuild_project. Apenas chamei a função que já vai fazer isso.
+
+Fiquei um pouco em dúvida se precisava chamar record_event de novo. Mas não precisava, porque a própria build_project já deve fazer esse registro.
+
+Também precisei tomar cuidado com o status=$?. Eu precisava guardar o valor logo depois do erro, antes de executar outro comando.
+
+## Parte 3.5 - testes e revisão
+
+Para fazer os testes, tive o problema de que build_project ainda não existe na minha branch, porque é a parte de outro integrante.
+
+Criei uma clean_project e uma build_project "mock" no arquivo de testes. Elas não limpam nem compilam nada. Só retornam os valores que eu escolho.
+
+Criei também uma variável chamada ordem. Ela guarda qual função foi chamada primeiro. Assim consegui ver se clean era chamada antes de build.
+
+Fiz 3 testes:
+
+- clean e build funcionam;
+- clean falha e build não é chamada;
+- clean funciona, mas build falha.
+
+Fiquei confuso porque eu já tinha importado a clean_project original no começo do arquivo. Não sabia se criar outra função com o mesmo nome iria substituir a primeira.
+
+Depois entendi que a função "mock" substitui a original apenas enquanto aquele teste está rodando. Por isso, coloquei os mocks só depois de terminar os testes da clean_project verdadeira.
+
+Essa parte foi mais fácil de programar. A parte mais chatinha foi entender como usar os mocks e como testar a ordem das funções.
