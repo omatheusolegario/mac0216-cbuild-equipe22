@@ -144,10 +144,7 @@ else
     erros=$((erros + 1))
 fi
 
-# Remove os arquivos temporários.
-rm -rf -- "$pasta_teste"
 
-# -----
 # Testes da segunda função - clean_project()
 
 # teste 6 - clean remove build, mas preserva outros arquivos
@@ -238,6 +235,74 @@ else
     erros=$((erros + 1))
 fi
 
+## Agora os testes da terceira funçao minha - rebuild
+
+# Funções falsas usadas para testar rebuild_project.
+
+ordem=""
+resultado_clean=0
+resultado_build=0
+
+clean_project() {
+    ordem="${ordem}clean;"
+    return "$resultado_clean"
+}
+
+build_project() {
+    ordem="${ordem}build;"
+    return "$resultado_build"
+}
+
+# teste 10 - clean e build funcionam
+
+ordem=""
+resultado_clean=0
+resultado_build=0
+
+rebuild_project > /dev/null 2> /dev/null
+codigo=$?
+
+if [[ $codigo -eq 0 && "$ordem" == "clean;build;" ]]; then
+    echo "PASSOU: rebuild executou clean e depois build"
+else
+    echo "FALHOU: rebuild não executou clean e build corretamente"
+    erros=$((erros + 1))
+fi
+
+# teste 11 - clean falha e build não deve ser chamado
+
+ordem=""
+resultado_clean=4
+resultado_build=0
+
+rebuild_project > /dev/null 2> /dev/null
+codigo=$?
+
+if [[ $codigo -eq 4 && "$ordem" == "clean;" ]]; then
+    echo "PASSOU: rebuild parou quando clean falhou"
+else
+    echo "FALHOU: rebuild tentou continuar depois da falha de clean"
+    erros=$((erros + 1))
+fi
+
+# teste 12 - clean funciona, mas build falha
+
+ordem=""
+resultado_clean=0
+resultado_build=7
+
+rebuild_project > /dev/null 2> /dev/null
+codigo=$?
+
+if [[ $codigo -eq 7 && "$ordem" == "clean;build;" ]]; then
+    echo "PASSOU: rebuild preservou o erro de build"
+else
+    echo "FALHOU: rebuild não tratou corretamente o erro de build"
+    erros=$((erros + 1))
+fi
+
+# Remove os arquivos temporários
+rm -rf -- "$pasta_teste"
 
 # Resultado final.
 echo

@@ -115,5 +115,29 @@ clean_project() {
 }
 
 rebuild_project() {
-    :
+    local status
+
+    verbose_msg "Reconstruindo o projeto."
+
+    # tenta limpar o projeto.
+    if clean_project; then
+        debug_msg "Limpeza concluída. Iniciando compilação."
+    else
+        status=$?
+
+        printf 'Erro: não foi possível limpar o projeto antes da compilação.\n' >&2
+
+        return "$status"
+    fi
+
+    # Somente compila se a limpeza funcionou.
+    if build_project; then
+        return 0
+    else
+        status=$?
+
+        printf 'Erro: não foi possível compilar o projeto novamente.\n' >&2
+
+        return "$status"
+    fi
 }
