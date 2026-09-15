@@ -3,8 +3,8 @@
 # Parte: execução, limpeza e reconstruçao
 
 # Log
-- Vou começar implementando 3 funçoes:
-    -'run_project'
+- Vou começar implementando as 3 funçoes:
+    -'run_project'`
     -'clean_project'
     -'rebuild_project''
 
