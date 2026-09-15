@@ -55,7 +55,63 @@ run_project() {
 }
 
 clean_project() {
-    :
+    # Verifica se os diretórios necessários foram definidos.
+    if [[ -z "${PROJECT_DIR:-}" ]]; then
+        printf 'Erro: o diretório do projeto não foi definido.\n' >&2
+        return 1
+    fi
+
+    if [[ -z "${BUILD_DIR:-}" ]]; then
+        printf 'Erro: o diretório de compilação não foi definido.\n' >&2
+        return 1
+    fi
+
+    # Vou proteger contra a remoção de um diretório perigoso.
+    # BUILD_DIR deve estar dentro de PROJECT_DIR.
+    if [[ "$BUILD_DIR" == "/" ||
+          "$BUILD_DIR" == "$PROJECT_DIR" ||
+          "$BUILD_DIR" != "$PROJECT_DIR"/* ]]; then
+
+        printf 'Erro: diretório de compilação inválido: %s\n' \
+            "$BUILD_DIR" >&2
+
+        return 1
+    fi
+
+    # Não permite apagar o diretório de logs caso ele esteja
+    # dentro do diretório de compilação.
+    if [[ -n "${LOG_DIR:-}" &&
+          ( "$LOG_DIR" == "$BUILD_DIR" || "$LOG_DIR" == "$BUILD_DIR"/* ) ]]; then
+        printf 'Erro: o diretório de logs está dentro de build.\n' >&2
+        return 1
+    fi
+
+    debug_msg "Diretório que será removido: $BUILD_DIR"
+
+    # Se build não existe, o projeto já está limpo.
+    if [[ ! -e "$BUILD_DIR" ]]; then
+        verbose_msg "O projeto já está limpo."
+        return 0
+    fi
+
+    # BUILD_DIR deve ser realmente um diretório.
+    if [[ ! -d "$BUILD_DIR" ]]; then
+        printf 'Erro: BUILD_DIR não corresponde a um diretório: %s\n' \
+            "$BUILD_DIR" >&2
+
+        return 1
+    fi
+
+    verbose_msg "Removendo arquivos de compilação."
+
+    if rm -rf -- "$BUILD_DIR"; then
+        return 0
+    else
+        printf 'Erro: não foi possível limpar o diretório: %s\n' \
+            "$BUILD_DIR" >&2
+
+        return 1
+    fi
 }
 
 rebuild_project() {

@@ -147,6 +147,98 @@ fi
 # Remove os arquivos temporários.
 rm -rf -- "$pasta_teste"
 
+# -----
+# Testes da segunda função - clean_project()
+
+# teste 6 - clean remove build, mas preserva outros arquivos
+
+PROJECT_DIR="$pasta_teste/projeto"
+BUILD_DIR="$PROJECT_DIR/build"
+LOG_DIR="$PROJECT_DIR/logs"
+
+mkdir -p "$BUILD_DIR/objetos"
+mkdir -p "$PROJECT_DIR/src"
+mkdir -p "$PROJECT_DIR/include"
+mkdir -p "$LOG_DIR"
+
+touch "$BUILD_DIR/programa"
+touch "$BUILD_DIR/objetos/main.o"
+touch "$PROJECT_DIR/src/main.c"
+touch "$PROJECT_DIR/include/main.h"
+touch "$LOG_DIR/events.log"
+
+clean_project > /dev/null 2> /dev/null
+codigo=$?
+
+if [[ $codigo -eq 0 &&
+      ! -e "$BUILD_DIR" &&
+      -f "$PROJECT_DIR/src/main.c" &&
+      -f "$PROJECT_DIR/include/main.h" &&
+      -f "$LOG_DIR/events.log" ]]; then
+
+    echo "PASSOU: clean remove build e preserva os outros arquivos"
+else
+    echo "FALHOU: clean remove build e preserva os outros arquivos"
+    erros=$((erros + 1))
+fi
+
+# teste 7 - limpar um projeto que já está limpo
+
+# BUILD_DIR já foi removido pelo teste anterior.
+clean_project > /dev/null 2> /dev/null
+codigo=$?
+
+if [[ $codigo -eq 0 ]]; then
+    echo "PASSOU: clean funciona quando o projeto já está limpo"
+else
+    echo "FALHOU: clean funciona quando o projeto já está limpo"
+    erros=$((erros + 1))
+fi
+
+
+# teste 8 - recusar diretório fora do projeto
+
+PROJECT_DIR="$pasta_teste/projeto"
+BUILD_DIR="$pasta_teste/diretorio_fora"
+LOG_DIR="$PROJECT_DIR/logs"
+
+mkdir -p "$BUILD_DIR"
+touch "$BUILD_DIR/arquivo_importante.txt"
+
+clean_project > /dev/null 2> /dev/null
+codigo=$?
+
+if [[ $codigo -ne 0 &&
+      -f "$BUILD_DIR/arquivo_importante.txt" ]]; then
+
+    echo "PASSOU: clean recusa diretório fora do projeto"
+else
+    echo "FALHOU: clean recusa diretório fora do projeto"
+    erros=$((erros + 1))
+fi
+
+# teste 9 -  não apagar logs que estejam dentro de build
+
+PROJECT_DIR="$pasta_teste/projeto_com_logs"
+BUILD_DIR="$PROJECT_DIR/build"
+LOG_DIR="$BUILD_DIR/logs"
+
+mkdir -p "$LOG_DIR"
+touch "$LOG_DIR/events.log"
+
+clean_project > /dev/null 2> /dev/null
+codigo=$?
+
+if [[ $codigo -ne 0 &&
+      -f "$LOG_DIR/events.log" ]]; then
+
+    echo "PASSOU: clean protege o diretório de logs"
+else
+    echo "FALHOU: clean protege o diretório de logs"
+    erros=$((erros + 1))
+fi
+
+
 # Resultado final.
 echo
 
