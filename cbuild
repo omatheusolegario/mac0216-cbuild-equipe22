@@ -84,3 +84,27 @@ parse_args() {
         return 0
 }
 
+load_modules() {
+    #Caminho absoluto do diretório onde o script principal está localizado.
+    local script_dir
+    local module
+
+    #Descobre onde o diretório está localizado.
+    #${BASH_SOURCE[0]} é o caminho do arquivo do script atual.
+    if script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"; then
+        :
+    else
+        echo "Erro: não foi possível localizar a pasta da ferramenta." >&2
+        return 1
+    fi
+
+    #Percorre a lista de módulos que precisam ser carregados. Source carrega e executa o conteúdo do arquivo.
+    for module in project build actions observability; do
+        if ! source "$script_dir/lib/$module.sh"; then
+            echo "Erro: não foi possível carregar o módulo $module" >&2
+            return 1
+        fi
+    done
+
+    return 0
+}
