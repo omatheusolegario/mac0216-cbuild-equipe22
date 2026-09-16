@@ -108,3 +108,28 @@ load_modules() {
 
     return 0
 }
+
+#Dispatcher. Pega o comando armazenado em COMMAND e decide qual função deve ser executada.
+dispatch_command() {
+    case "$COMMAND" in
+        build)
+            build_project
+            ;;
+        run)
+            run_project
+            ;;
+        clean)
+            clean_project
+            ;;
+        rebuild)
+            rebuild_project
+            ;;
+        info)
+            show_info
+            ;;
+        *)
+            echo "Erro: comando interno desconhecido." >&2
+            return 2
+            ;;
+    esac
+}
