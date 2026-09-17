@@ -65,13 +65,18 @@ log_end() {
     return 1
   fi
 
+  local Log_Status="Sucesso"
+  if [[ $Log_Codigo -ne 0 ]]; then
+    Log_Status="Falha"
+  fi
+
   #calcula o tempo de execução
   local Log_Tempo_Nano=$(($(date +%s%N) - $Log_Start_Time))
   local Log_Execucao="$(($Log_Tempo_Nano / 1000000000)).$(printf "%03d" "$((($Log_Tempo_Nano / 1000000) % 1000))")"
   #le o arquivo temporario de erros, e formata a string
   local Log_Erros=$(sed 's/^Erro: //; H; 1h; $!d; x; s/\n/, /g' "$ARQUIVO_ERROS")
-  #o arquivo de log chama operations.log. Exemplo do formato de uma linha do log: 09/09/26 16:04:49 - Comando: build - Tempo de execução: 0.005 - Código de retorno: 0 - Erro: Não foi possível compilar o arquivo fonte
-  echo "$Log_Time_Formatted - Comando: $Log_Comando - Tempo de execução: $Log_Execucao - Código de retorno: $Log_Codigo - Erros: $Log_Erros" >>$LOG_DIR/operations.log
+  #o arquivo de log chama operations.log. Exemplo do formato de uma linha do log: 09/09/26 16:04:49 - Comando: build - Status: Sucesso - Tempo de execução: 0.005 - Código de retorno: 0 - Erros: Não foi possível compilar o arquivo fonte
+  echo "$Log_Time_Formatted - Comando: $Log_Comando - Status: $Log_Status - Tempo de execução: $Log_Execucao - Código de retorno: $Log_Codigo - Erros: $Log_Erros" >>$LOG_DIR/operations.log
   return 0
 }
 
