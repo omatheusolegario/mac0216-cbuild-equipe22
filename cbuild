@@ -133,3 +133,83 @@ dispatch_command() {
             ;;
     esac
 }
+
+main() {
+    #Código de saída do comando principal.
+    local command_status
+    #Código de saída relacionado ao encerramento do log.
+    local log_status
+    #Código de saída da geração do relatório.
+    local report_status=0
+
+    #Processa todos os argumentos recebidos pelo programa.
+    if parse_args "$@"; then
+        :
+    else
+        return "$?"
+    fi
+
+
+    #Carrega os módulos necessários para o programa.
+    if ! load_modules; then
+        return 1
+    fi
+
+
+    #Inicializa o projeto.
+    if ! project_init "$PROJECT_INPUT"; then
+        return 1
+    fi
+
+
+    #Inicia o sistema de log.
+    if ! log_begin "$COMMAND"; then
+        echo "Erro: não foi possível iniciar o log da operação." >&2
+        return 1
+    fi
+
+
+    #Executa o comando escolhido pelo usuário.
+    if dispatch_command; then
+        command_status=0
+    else
+        command_status=$?
+    fi
+
+
+    #Finaliza o log da operação.
+    if log_end "$command_status"; then
+        log_status=0
+    else
+        log_status=$?
+        echo "Erro: não foi possível finalizar o log." >&2
+    fi
+
+
+    #Verifica se o usuário pediu a geração de relatório.
+    if ((REPORT == 1)); then
+        if generate_report; then
+            report_status=0
+        else
+            report_status=$?
+            echo "Erro: não foi possível gerar o relatório." >&2
+        fi
+    fi
+
+
+    #Verifica se o comando principal falhou. (Mais importante.)
+    if ((command_status != 0)); then
+        return "$command_status"
+    fi
+
+
+    #Verifica se houve algum problema ao finalizar log ou gerar relatório.
+    if ((log_status != 0 || report_status != 0)); then
+        return 1
+    fi
+
+    return 0
+}
+
+main "$@"
+exit "$?"
