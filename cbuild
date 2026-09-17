@@ -5,210 +5,232 @@ PROJECT_INPUT="$PWD"
 VERBOSE=0
 DEBUG=0
 REPORT=0
+OPT_LEVEL=0
 
 usage() {
-echo "Uso: cbuild <comando> [opções]
+  echo "Uso: cbuild <comando> [opções]
 Comandos: build, run, clean, rebuild, info
 Opções:
---dir DIRETÓRIO  Define a raiz do projeto
---verbose        Mostra informações adicionais sobre as etapas executadas
---debug          Mostra informações internas
---report         Gera um relatório"
+--dir DIRETÓRIO   Define a raiz do projeto
+--verbose         Mostra informações adicionais sobre as etapas executadas
+--debug           Mostra informações internas
+--O 0|1|2|3       Define o nível de otimização
+--report          Gera um relatório"
 }
 
 parse_args() {
-    #Verifica se um comando foi dado.
-    if (($# == 0)); then
-        echo "Erro: informe um comando." >&2
-        usage >&2
-        return 2
-    fi
+  #Verifica se um comando foi dado.
+  if (($# == 0)); then
+    echo "Erro: informe um comando." >&2
+    usage >&2
+    return 2
+  fi
 
-    #Verifica se o comando dado é válido. Caso seja válido, o comando é salvo em COMMAND
+  #Verifica se o comando dado é válido. Caso seja válido, o comando é salvo em COMMAND
+  case "$1" in
+  build | run | clean | rebuild | info)
+    COMMAND="$1"
+    ;;
+  *)
+    echo "Erro: comando inválido: $1" >&2
+    usage >&2
+    return 2
+    ;;
+  esac
+
+  #Descarta o comando e $1 passa a ser a opção.
+  shift
+
+  while (($# > 0)); do
+    #Verifica se a opção é válida.
     case "$1" in
-        build|run|clean|rebuild|info)
-            COMMAND="$1"
-            ;;
-        *)
-            echo "Erro: comando inválido: $1" >&2
-            usage >&2
-            return 2
-            ;;
+    --dir)
+      #Verifica se o diretório foi dado.
+      if (($# < 2)); then
+        echo "Erro: --dir exige um diretório." >&2
+        return 2
+      fi
+
+      #Verifica se o diretório dado é válido.
+      if [[ -z "$2" || "$2" == --* ]]; then
+        echo "Erro: valor inválido para --dir." >&2
+        return 2
+      fi
+
+      #Diretório é salvo em PROJECT_INPUT.
+      PROJECT_INPUT="$2"
+      #Descarta --dir e o diretório.
+      shift 2
+      ;;
+
+    --verbose)
+      VERBOSE=1
+      shift
+      ;;
+    --debug)
+      DEBUG=1
+      shift
+      ;;
+    --report)
+      REPORT=1
+      shift
+      ;;
+    --O)
+      #Verifica se o nível de otimização foi dado
+      if (($# < 2)); then
+        echo "Erro: --O exige um número (0, 1, 2, 3)." >&2
+        return 2
+      fi
+
+      #Verifica se o nível de otimização dado é válido.
+      if [[ -z "$2" || "$2" -gt 3 || "$2" -lt 0 || "$2" =~ ^[a-zA-Z]+$ ]]; then
+        echo "Erro: valor inválido para --O." >&2
+        return 2
+      fi
+
+      OPT_LEVEL="$2"
+      shift 2
+      ;;
+    *)
+      echo "Erro: opção ou argumento inválido: $1" >&2
+      return 2
+      ;;
     esac
+  done
 
-    #Descarta o comando e $1 passa a ser a opção.
-    shift
-
-    while (($# > 0)); do
-        #Verifica se a opção é válida.
-        case "$1" in
-            --dir)
-                #Verifica se o diretório foi dado.
-                if (($# < 2)); then
-                    echo "Erro: --dir exige um diretório." >&2
-                    return 2
-                fi
-
-                #Verifica se o diretório dado é válido.
-                if [[ -z "$2" || "$2" == --* ]]; then
-                    echo "Erro: valor inválido para --dir." >&2
-                    return 2
-                fi
-
-                #Diretório é salvo em PROJECT_INPUT.
-                PROJECT_INPUT="$2"
-                #Descarta --dir e o diretório.
-                shift 2
-                ;;
-
-            --verbose)
-                VERBOSE=1
-                shift
-                ;;
-            --debug)
-                DEBUG=1
-                shift
-                ;;
-            --report)
-                REPORT=1
-                shift
-                ;;
-
-            *)
-                echo "Erro: opção ou argumento inválido: $1" >&2
-                return 2
-                ;;
-            esac
-        done
-
-        return 0
+  return 0
 }
 
 load_modules() {
-    #Caminho absoluto do diretório onde o script principal está localizado.
-    local script_dir
-    local module
+  #Caminho absoluto do diretório onde o script principal está localizado.
+  local script_dir
+  local module
 
-    #Descobre onde o diretório está localizado.
-    #${BASH_SOURCE[0]} é o caminho do arquivo do script atual.
-    if script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"; then
-        :
-    else
-        echo "Erro: não foi possível localizar a pasta da ferramenta." >&2
-        return 1
+  #Descobre onde o diretório está localizado.
+  #${BASH_SOURCE[0]} é o caminho do arquivo do script atual.
+  if script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"; then
+    :
+  else
+    echo "Erro: não foi possível localizar a pasta da ferramenta." >&2
+    return 1
+  fi
+
+  #Percorre a lista de módulos que precisam ser carregados. Source carrega e executa o conteúdo do arquivo.
+  for module in project build actions observability; do
+    if ! source "$script_dir/lib/$module.sh"; then
+      echo "Erro: não foi possível carregar o módulo $module" >&2
+      return 1
     fi
+  done
 
-    #Percorre a lista de módulos que precisam ser carregados. Source carrega e executa o conteúdo do arquivo.
-    for module in project build actions observability; do
-        if ! source "$script_dir/lib/$module.sh"; then
-            echo "Erro: não foi possível carregar o módulo $module" >&2
-            return 1
-        fi
-    done
-
-    return 0
+  return 0
 }
 
 #Dispatcher. Pega o comando armazenado em COMMAND e decide qual função deve ser executada.
 dispatch_command() {
-    case "$COMMAND" in
-        build)
-            build_project
-            ;;
-        run)
-            run_project
-            ;;
-        clean)
-            clean_project
-            ;;
-        rebuild)
-            rebuild_project
-            ;;
-        info)
-            show_info
-            ;;
-        *)
-            echo "Erro: comando interno desconhecido." >&2
-            return 2
-            ;;
-    esac
+  case "$COMMAND" in
+  build)
+    build_project
+    ;;
+  run)
+    run_project
+    ;;
+  clean)
+    clean_project
+    ;;
+  rebuild)
+    rebuild_project
+    ;;
+  info)
+    show_info
+    ;;
+  *)
+    echo "Erro: comando interno desconhecido." >&2
+    return 2
+    ;;
+  esac
 }
 
 main() {
-    #Código de saída do comando principal.
-    local command_status
-    #Código de saída relacionado ao encerramento do log.
-    local log_status
-    #Código de saída da geração do relatório.
-    local report_status=0
+  #Código de saída do comando principal.
+  local command_status
+  #Código de saída relacionado ao encerramento do log.
+  local log_status
+  #Código de saída da geração do relatório.
+  local report_status=0
 
-    #Processa todos os argumentos recebidos pelo programa.
-    if parse_args "$@"; then
-        :
+  #Direciona todos erros para um arquivo na pasta de execução( ou para a pasta em $HOME), para que os logs consigam capturar eles
+  DIR_ERROS="${XDG_RUNTIME_DIR:-$HOME/.erros}"
+  if ! mkdir -p "$DIR_ERROS"; then
+    echo "Erro: não foi possível criar o diretório de erros temporário"
+    return 1
+  fi
+  ARQUIVO_ERROS="$DIR_ERROS/erros.tmp"
+  #direciona todos erros para tanto o arquivo temporário criado quanto para std_err
+  exec 2> >(tee -a "$ARQUIVO_ERROS" >&2)
+
+  #Processa todos os argumentos recebidos pelo programa.
+  if parse_args "$@"; then
+    :
+  else
+    return "$?"
+  fi
+
+  #Carrega os módulos necessários para o programa.
+  if ! load_modules; then
+    return 1
+  fi
+
+  #Inicializa o projeto.
+  if ! project_init "$PROJECT_INPUT"; then
+    return 1
+  fi
+
+  #Inicia o sistema de log.
+  if ! log_begin "$COMMAND"; then
+    echo "Erro: não foi possível iniciar o log da operação." >&2
+    return 1
+  fi
+
+  #Executa o comando escolhido pelo usuário.
+  if dispatch_command; then
+    command_status=0
+  else
+    command_status=$?
+  fi
+
+  #Finaliza o log da operação.
+  if log_end "$command_status"; then
+    rm -rf "$ARQUIVO_ERROS"
+    log_status=0
+  else
+    log_status=$?
+    echo "Erro: não foi possível finalizar o log." >&2
+    return 1
+  fi
+
+  #Verifica se o usuário pediu a geração de relatório.
+  if ((REPORT == 1)); then
+    if generate_report; then
+      report_status=0
     else
-        return "$?"
+      report_status=$?
+      echo "Erro: não foi possível gerar o relatório." >&2
+      return 1
     fi
+  fi
 
+  #Verifica se o comando principal falhou. (Mais importante.)
+  if ((command_status != 0)); then
+    return "$command_status"
+  fi
 
-    #Carrega os módulos necessários para o programa.
-    if ! load_modules; then
-        return 1
-    fi
+  #Verifica se houve algum problema ao finalizar log ou gerar relatório.
+  if ((log_status != 0 || report_status != 0)); then
+    return 1
+  fi
 
-
-    #Inicializa o projeto.
-    if ! project_init "$PROJECT_INPUT"; then
-        return 1
-    fi
-
-
-    #Inicia o sistema de log.
-    if ! log_begin "$COMMAND"; then
-        echo "Erro: não foi possível iniciar o log da operação." >&2
-        return 1
-    fi
-
-
-    #Executa o comando escolhido pelo usuário.
-    if dispatch_command; then
-        command_status=0
-    else
-        command_status=$?
-    fi
-
-
-    #Finaliza o log da operação.
-    if log_end "$command_status"; then
-        log_status=0
-    else
-        log_status=$?
-        echo "Erro: não foi possível finalizar o log." >&2
-    fi
-
-
-    #Verifica se o usuário pediu a geração de relatório.
-    if ((REPORT == 1)); then
-        if generate_report; then
-            report_status=0
-        else
-            report_status=$?
-            echo "Erro: não foi possível gerar o relatório." >&2
-        fi
-    fi
-
-
-    #Verifica se o comando principal falhou. (Mais importante.)
-    if ((command_status != 0)); then
-        return "$command_status"
-    fi
-
-
-    #Verifica se houve algum problema ao finalizar log ou gerar relatório.
-    if ((log_status != 0 || report_status != 0)); then
-        return 1
-    fi
-
-    return 0
+  return 0
 }
 
 main "$@"
