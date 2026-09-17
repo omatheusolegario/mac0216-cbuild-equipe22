@@ -123,7 +123,7 @@ EOF
       # -c para compilar até o arquivo de objeto, -I para especificar onde o compilador pode buscar por cabeçalhos,
       # -MMD para gerar um arquivo de dependências locais, -MP para o make não falhar com dependências antigas,
       # -O para o nível de otimização e -o para especificar o caminho do objeto gerado
-      gcc -c -I "$PROJECT_DIR/include" -MMD -MP "$arquivo_fonte" -O"$OPT_LEVEL" -o "$caminho_obj" 2>/dev/null
+      gcc -c -I "$PROJECT_DIR/include" -MMD -MP "$arquivo_fonte" -O"$OPT_LEVEL" -o "$caminho_obj"
 
       if [[ $? -ne 0 ]]; then
         echo "Erro: Não foi possível compilar o arquivo fonte" >&2
