@@ -83,7 +83,7 @@ parse_args() {
       fi
 
       #Verifica se o nível de otimização dado é válido.
-      if [[ -z "$2" || "$2" -gt 3 || "$2" -lt 0 || "$2" =~ ^[a-zA-Z]+$ ]]; then
+      if [[ ! ("$2" == 0 || "$2" == 1 || "$2" == 2 || "$2" == 3) ]]; then
         echo "Erro: valor inválido para --O." >&2
         return 2
       fi
@@ -159,15 +159,24 @@ main() {
   #Código de saída da geração do relatório.
   local report_status=0
 
-  #Direciona todos erros para um arquivo na pasta de execução( ou para a pasta em $HOME), para que os logs consigam capturar eles
-  DIR_ERROS="${XDG_RUNTIME_DIR:-$HOME/.erros}"
-  if ! mkdir -p "$DIR_ERROS"; then
-    echo "Erro: não foi possível criar o diretório de erros temporário"
+  #Direciona todos erros para um arquivo temporário, para que os logs consigam capturar eles
+  #e garante a exclusao do arquivo no fim da execucao/ fim forçado ou cancelado
+  ARQUIVO_ERROS=$(mktemp /tmp/erro.XXXXXX)
+
+  if [[ $? -ne 0 ]]; then
+    echo "Erro: Não foi possível criar o arquivo temporário." >&2
     return 1
   fi
-  ARQUIVO_ERROS="$DIR_ERROS/erros.tmp"
-  #direciona todos erros para tanto o arquivo temporário criado quanto para std_err
-  exec 2> >(tee -a "$ARQUIVO_ERROS" >&2)
+
+  trap 'fecha_leitura_erros; rm -f "$ARQUIVO_ERROS"' EXIT
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+
+  #cria um novo canal que aponta para o std_err, para que o tee não leia e escreva no mesmo canal
+  exec 3>&2
+  #direciona todos erros para tanto o arquivo temporário criado quanto para o canal 3 (std_err)
+  exec 2> >(tee -a "$ARQUIVO_ERROS" >&3)
+  tee_pid=$!
 
   #Processa todos os argumentos recebidos pelo programa.
   if parse_args "$@"; then
@@ -201,7 +210,6 @@ main() {
 
   #Finaliza o log da operação.
   if log_end "$command_status"; then
-    rm -rf "$ARQUIVO_ERROS"
     log_status=0
   else
     log_status=$?
@@ -231,6 +239,25 @@ main() {
   fi
 
   return 0
+}
+
+fecha_leitura_erros() {
+  if canal_aberto 3; then
+    exec 2>&3
+    exec 3>&-
+    wait "$tee_pid"
+  fi
+
+  if [[ $? -ne 0 ]]; then
+    echo "Erro: Falha no processamento de erros" >&2
+    return 1
+  fi
+  return 0
+}
+
+canal_aberto() {
+  local canal=$1
+  { true >&"$canal"; } 2>/dev/null
 }
 
 main "$@"
