@@ -2,7 +2,7 @@
 O cbuild é uma ferramenta de construção de executável de projetos desenvolvidos em C, capaz de verificar dependências, compilar, limpar compilação, recompilar, ligar objetos e rodar o executável, em modo normal, verboso e debug.
 # Pré-requisitos
 - Linux/ Unix-like SO
-- Bash/Zsh
+- Bash
 - GCC
 - GNU Make
 
@@ -46,7 +46,7 @@ EXECUTABLE=nomeprograma
 ```bash
 ./cbuild build --dir tests/projeto_teste01
 ./cbuild run --dir tests/projeto_teste01
-./cbuild rebuild --dir tests/projeto_teste01 -- O 2 --verbose
+./cbuild rebuild --dir tests/projeto_teste01 --O 2 --verbose
 ./cbuild clean --dir tests/projeto_teste01 --report
 ```
 
