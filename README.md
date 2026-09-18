@@ -37,17 +37,17 @@ Por padrão a ferramenta considera o diretório corrente como diretório do proj
 O .cbuild.conf deve ser criado no diretório do projeto informado ou no diretório corrente e aceita a variável EXECUTABLE, que define o nome do executável do projeto.
 
 ```bash
-EXECUTABLE="programa"
+EXECUTABLE=nomeprograma
 ```
 
 
 # Exemplos de uso
 
 ```bash
-./cbuild build --dir tests/mgolegario
-./cbuild run --dir tests/mgolegario
-./cbuild rebuild --dir tests/mgolegario -- O 2 --verbose
-./cbuild clean --dir tests/mgolegario --report
+./cbuild build --dir tests/projeto_teste01
+./cbuild run --dir tests/projeto_teste01
+./cbuild rebuild --dir tests/projeto_teste01 -- O 2 --verbose
+./cbuild clean --dir tests/projeto_teste01 --report
 ```
 
 # Arquivos gerados
