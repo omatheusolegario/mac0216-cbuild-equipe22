@@ -20,7 +20,7 @@ build_project() {
   debug_msg "Conferindo se existem arquivos fonte..."
   #Confere se existem arquivos fonte
   if [[ ${#SOURCE_FILES[@]} -eq 0 ]]; then
-    echo "Não há arquivos fonte especificados" >&2
+    echo "Erro: Não há arquivos fonte especificados" >&2
     return 1
   fi
   debug_msg "Existem arquivos fonte."
