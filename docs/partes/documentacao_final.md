@@ -373,7 +373,7 @@ Na construção com otimização 2, o GCC emitiu um aviso sobre o retorno de `sc
 
 <!-- pagebreak -->
 
-## 9 Considerações finais
+## 8 Considerações finais
 
 O trabalho reuniu tarefas de shell, compilação e organização de código. A divisão por módulos permitiu desenvolver as partes separadamente, mas a integração mostrou a importância de combinar funções, caminhos e retornos desde o começo. As maiores dificuldades ficaram na descoberta de arquivos, nas dependências, na limpeza e na captura de erros.
 
