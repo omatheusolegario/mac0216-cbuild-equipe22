@@ -25,7 +25,7 @@ A função log_end adiciona uma linha no arquivo logs/operations.log. Ela retorn
 
 O formato de uma linha do log é:
 
-\<data horário> - Comando: \<comando> - Status: \<Sucesso ou Falha> - Tempo de execução: \<tempo em segundos, com três casas decimais> - Código de retorno: \<0 ou 1> - Erros: \<erros, se houveram>
+\<data horário> - Comando: \<comando> - Status: \<Sucesso ou Falha> - Tempo de execução: \<tempo em segundos, com três casas decimais> - Código de retorno: \<0, que indica sucesso, e diferente de 0, que indica erro> - Erros: \<erros, se houveram>
 
 ## Parte 3 - função generate_report
 A função generate_report deverá ser chamada quando o cbuild for chamado com a opção --report. Ela cria um arquivo logs/report.txt, com informações sobre as operações executadas pelo cbuild. Mas retorna erro se não consegue localizar os logs. Essa função obtém suas informações dos logs, que foram descritos na Parte 2.
