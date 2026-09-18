@@ -55,7 +55,7 @@ EXECUTABLE="programa"
 - Os logs e o report.txt em caminho/do/projeto/logs
 
 # Testes e limitações
-Existem testes disponíveis em tests/mgolegario e tests/matheus. Para executá-los:
+Existe um projeto teste disponível em tests/projeto_teste01. Para executá-lo:
 
 ```bash
 ./cbuild build --dir tests/projeto_teste01
