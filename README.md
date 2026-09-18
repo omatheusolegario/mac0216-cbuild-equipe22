@@ -10,12 +10,12 @@ O cbuild é uma ferramenta de construção de executável de projetos desenvolvi
 Para executar, da pasta da ferramenta:
 ```bash
 chmod +x cbuild
-./cbuild build --dir /caminho/do/projeto
+./cbuild build --dir caminho_do_projeto/
 ```
 
 Ou sem depender da permissão para execução de scripts:
 ```bash
-bash cbuild build --dir /caminho/do/projeto
+bash cbuild build --dir caminho_do_projeto/
 ```
 Por padrão a ferramenta considera o diretório corrente como diretório do projeto.
 
@@ -27,7 +27,7 @@ Por padrão a ferramenta considera o diretório corrente como diretório do proj
 - info: mostra informações do projeto e da execução da ferramenta
 
 # Opções 
-- --dir \[caminho/do/projeto]: escolhe o diretório do projeto
+- --dir \[caminho_do_projeto]: escolhe o diretório do projeto
 - --verbose: roda a ferramenta informando suas etapas
 - --debug: mostra mensagens de debug, como estado de variáveis, loop atual, etc.
 - --report: gera um relatório report.txt com informações de execução internas
@@ -51,8 +51,8 @@ EXECUTABLE=nomeprograma
 ```
 
 # Arquivos gerados
-- Os arquivos objeto, dependências e o executável em caminho/do/projeto/build/
-- Os logs e o report.txt em caminho/do/projeto/logs
+- Os arquivos objeto, dependências e o executável em caminho_do_projeto/build/
+- Os logs e o report.txt em caminho_do_projeto/logs
 
 # Testes e limitações
 Existe um projeto teste disponível em tests/projeto_teste01. Para executá-lo:
