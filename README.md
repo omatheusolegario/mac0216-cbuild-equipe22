@@ -9,13 +9,13 @@ O cbuild é uma ferramenta de construção de executável de projetos desenvolvi
 # Como executar
 Para executar, da pasta da ferramenta:
 ```bash
-  chmod +x cbuild
-  ./cbuild build --dir /caminho/do/projeto
+chmod +x cbuild
+./cbuild build --dir /caminho/do/projeto
 ```
 
 Ou sem depender da permissão para execução de scripts:
 ```bash
-  bash cbuild build --dir /caminho/do/projeto
+bash cbuild build --dir /caminho/do/projeto
 ```
 Por padrão a ferramenta considera o diretório corrente como diretório do projeto.
 
@@ -44,10 +44,10 @@ EXECUTABLE="programa"
 # Exemplos de uso
 
 ```bash
-  ./cbuild build --dir tests/mgolegario
-  ./cbuild run --dir tests/mgolegario
-  ./cbuild rebuild --dir tests/mgolegario -- O 2 --verbose
-  ./cbuild clean --dir tests/mgolegario --report
+./cbuild build --dir tests/mgolegario
+./cbuild run --dir tests/mgolegario
+./cbuild rebuild --dir tests/mgolegario -- O 2 --verbose
+./cbuild clean --dir tests/mgolegario --report
 ```
 
 # Arquivos gerados
@@ -58,9 +58,8 @@ EXECUTABLE="programa"
 Existem testes disponíveis em tests/mgolegario e tests/matheus. Para executá-los
 
 ```bash
-  ./cbuild build --dir tests/mgolegario
-  ./cbuild run --dir tests/mgolegario
-  ./cbuild build --dir tests/matheus
-  ./cbuild run --dir tests/matheus
-```
+./cbuild build --dir tests/projeto_teste01
+./cbuild run --dir tests/projeto_teste01
+./cbuild build --dir tests/projeto_teste02
+./cbuild run --dir tests/projeto_teste02
 ```
