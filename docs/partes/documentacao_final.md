@@ -8,6 +8,8 @@ Gustavo Yukio Yamani
 Matheus Guimarães Olegario
 Matheus Moreira Cabral
 
+**Repositório do projeto:** [https://github.com/omatheusolegario/mac0216-cbuild-equipe22](https://github.com/omatheusolegario/mac0216-cbuild-equipe22)
+
 ## 1 Introdução
 
 O cbuild é uma ferramenta de linha de comando para construir e executar projetos escritos em C. Desenvolvemos a solução em Bash, com comandos para compilar, executar, limpar os arquivos gerados, reconstruir o projeto e consultar suas informações. A ferramenta também registra as operações e oferece modos de saída mais detalhados para acompanhar o que está acontecendo.
