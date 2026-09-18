@@ -1,7 +1,0 @@
-17/09/26 10:45:00 - Comando: build - Tempo de execução: 0.193 - Código de retorno: 0 - Erros: 
-17/09/26 10:45:57 - Comando: run - Tempo de execução: 3.616 - Código de retorno: 0 - Erros: 
-17/09/26 10:46:09 - Comando: clean - Tempo de execução: 0.013 - Código de retorno: 0 - Erros: 
-17/09/26 10:46:16 - Comando: run - Tempo de execução: 0.009 - Código de retorno: 1 - Erros: , executável não encontrado: /Users/mgolegario/Developer/academic/usp/bcc/2026-2/MAC0216/tarefa01/tests/mgolegario/build/programa
-17/09/26 10:46:36 - Comando: clean - Tempo de execução: 0.011 - Código de retorno: 0 - Erros: 
-17/09/26 10:46:41 - Comando: run - Tempo de execução: 0.008 - Código de retorno: 1 - Erros: , executável não encontrado: /Users/mgolegario/Developer/academic/usp/bcc/2026-2/MAC0216/tarefa01/tests/mgolegario/build/programa
-17/09/26 11:05:51 - Comando: run - Tempo de execução: 0.009 - Código de retorno: 1 - Erros: Erro: executável não encontrado: /Users/mgolegario/Developer/academic/usp/bcc/2026-2/MAC0216/tarefa01/tests/mgolegario/build/programa

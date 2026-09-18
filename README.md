@@ -22,7 +22,7 @@ Por padrão a ferramenta considera o diretório corrente como diretório do proj
 # Comandos
 - build: gera o executável do seu projeto
 - run: roda o executável do seu projeto
-- clean: limpa a pasta build/
+- clean: limpa a pasta build/ e preserva os logs
 - rebuild: limpa a pasta build/ e gera o executável do seu projeto
 - info: mostra informações do projeto e da execução da ferramenta
 
@@ -55,11 +55,11 @@ EXECUTABLE="programa"
 - Os logs e o report.txt em caminho/do/projeto/logs
 
 # Testes e limitações
-Existem testes disponíveis em tests/mgolegario e tests/matheus. Para executá-los
+Existem testes disponíveis em tests/mgolegario e tests/matheus. Para executá-los:
 
 ```bash
 ./cbuild build --dir tests/projeto_teste01
 ./cbuild run --dir tests/projeto_teste01
-./cbuild build --dir tests/projeto_teste02
-./cbuild run --dir tests/projeto_teste02
 ```
+
+Não é recomendado o uso de caracteres como "$" ou "#" nos nomes de arquivos e diretórios do projeto, pois eles quebram os scripts da ferramenta, escritos em bash.
