@@ -69,7 +69,7 @@ Os módulos são carregados com `source`, no mesmo processo Bash. Suas funções
 
 Os artefatos de compilação ficam em `build/`, enquanto o histórico permanece em `logs/`. Essa separação é importante para que `clean` não apague os registros. O projeto de exemplo está em `tests/projeto_teste01`, com três fontes e dois cabeçalhos.
 
-<!-- pagebreak -->
+
 
 
 ## 3 Módulos implementados
@@ -100,7 +100,7 @@ A descoberta usa `find`, excluindo as duas pastas de saída com `-prune`. A opç
 
 A busca é recursiva em toda a raiz, não apenas em `src/`. Por isso, a pasta selecionada deve representar um projeto que gera um único executável. Várias fontes com funções `main` diferentes podem causar erro na ligação.
 
-<!-- pagebreak -->
+
 
 ### 3.3 Compilação incremental
 
@@ -135,7 +135,7 @@ Os objetos correspondentes às fontes atuais são guardados em um array e passad
 
 A ligação é executada em todo `build` bem-sucedido, mesmo quando os objetos não mudaram. Portanto, a economia incremental está na etapa de compilação. Ao terminar, o programa salva o nível de otimização e informa o caminho do executável. Falhas de compilação ou ligação interrompem a operação.
 
-<!-- pagebreak -->
+
 
 ### 3.4 Execução limpeza e reconstrução
 
@@ -157,7 +157,7 @@ Cada linha de `logs/operations.log` contém data, horário, comando, status, dur
 
 `show_info` conta fontes e cabeçalhos, soma suas quebras de linha com `wc -l`, mede o binário com `wc -c` e procura no histórico as últimas construções e execuções bem-sucedidas. Quando um dado não existe, mostra que está indisponível. `generate_report` reescreve `logs/report.txt` com totais de operações, sucessos, falhas, compilações bem-sucedidas e execuções bem-sucedidas. Esse arquivo é diferente do presente relatório técnico.
 
-<!-- pagebreak -->
+
 
 ## 4 Decisões de projeto
 
@@ -243,7 +243,7 @@ Implementei `load_modules` com `source`, para disponibilizar as funções no mes
 
 O código de retorno é guardado antes das etapas de finalização para não se perder com a execução de outro comando. O relatório é gerado depois do log, para ter acesso ao registro completo da operação. Na versão integrada, esse fluxo também inclui a captura de erros feita com `tee`.
 
-<!-- pagebreak -->
+
 
 ### 6.2 Matheus Guimarães Olegario
 
@@ -273,7 +273,7 @@ Nos testes do desenvolvimento, verifiquei primeira compilação, repetição sem
 
 Fazer a interligação das partes ajudou muito a entender a importância das aspas nas variáveis e do direcionamento de erros. Na parte de build, aprendi mais sobre Make e as opções do GCC. Uma melhoria seria tratar melhor casos como `$` e `#` nos caminhos, para ampliar os projetos que a ferramenta consegue aceitar.
 
-<!-- pagebreak -->
+
 
 ### 6.3 Thiago Assumpção Baisch
 
@@ -307,7 +307,7 @@ Na minha branch, `build_project` ainda não existia. Criei mocks de clean e buil
 
 Fiquei confuso porque já tinha importado a `clean_project` original. Depois entendi que definir outra função com o mesmo nome substitui a anterior naquele processo de teste. Coloquei os mocks depois dos testes da função verdadeira. Essa parte foi mais fácil de programar; o mais chatinho foi entender os mocks e testar a ordem das funções.
 
-<!-- pagebreak -->
+
 
 ### 6.4 Matheus Moreira Cabral
 
@@ -341,7 +341,7 @@ As funções `verbose_msg` e `debug_msg` são as mais simples. Elas recebem uma 
 
 A principal mudança de projeto registrada na minha parte foi usar o próprio log como fonte das datas, sem manter um segundo registro separado para build e run. Isso também mudou a forma como os outros módulos se conectavam à minha parte.
 
-<!-- pagebreak -->
+
 
 ## 7 Resultados obtidos
 
@@ -373,7 +373,7 @@ Os relatos registram testes com mocks, espaços nos caminhos, remoção de `.d` 
 
 Na construção com otimização 2, o GCC emitiu um aviso sobre o retorno de `scanf` ser ignorado pelo exemplo. O build ainda terminou com código 0. Não foram medidos ganhos de tempo ou desempenho entre níveis de otimização; os resultados confirmam o comportamento funcional dos cenários verificados.
 
-<!-- pagebreak -->
+
 
 ## 8 Considerações finais
 
