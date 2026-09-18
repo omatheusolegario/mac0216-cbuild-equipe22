@@ -51,7 +51,7 @@ EXECUTABLE=nomeprograma
 ```
 
 # Arquivos gerados
-- Os arquivos objeto, dependências e o executável em caminho_do_projeto/build/
+- Os arquivos objeto, dependências e o executável em caminho_do_projeto/build
 - Os logs e o report.txt em caminho_do_projeto/logs
 
 # Testes e limitações
