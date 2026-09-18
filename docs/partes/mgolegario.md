@@ -1,5 +1,16 @@
+# Matheus Guimarães Olegario
+
 # Minha responsabilidade
 Fiquei responsável pela implementação do comando build do nosso cbuild, tendo que lidar com compilação, ligação de objetos e compilação incremental, de acordo com as especificações da tarefa.
+
+# Funcionamento de build_project
+1. Recebe os caminhos, fontes e níveis de otimização (da parte do Gustavo)
+2. Verifica se existe o GCC, o Make e os arquivos fonte
+3. Confere se a otimização mudou
+4. Para cada fonte, determina os caminhos .d e .o únicos para cada arquivo
+5. Se faltam alguns desses arquivos (.d ou .o), recompila; se não consulta o make dentro do bash
+6. Compila os arquivos necessários e liga os objetos relativos às fonte atuais
+7. Salva a otimização após sucesso e retorna falha se alguma das etapas der erro
 
 # Primeira abordagem e dificuldades
 A grande dificuldade da implementação foi achar um jeito de conseguir fazer a compilação incremental funcionar. A primeira ideia que veio foi comparar as datas dos arquivos .c e .o, e procurar dependências com grep dentro dos arquivos .c. Abordagem que logo de cara falhava para dependências de dependências, além de não conseguir interpretar corretamente nomes com espaços e outros caracteres, que não eram tratados corretamente nas minhas tentativas de grep junto de qualquer tratamento de texto: sed, awk, etc. por terem que tratar de muitos casos diferentes e específicos.
@@ -17,7 +28,16 @@ Então comecei a andar no caminho certo ao adotar a filosofia de delegar tarefas
 Também fui responsável por juntar as partes de cada um em suas branches na main, corrigir erros e verificar o que estava pendente. O principal vilão dessa parte com certeza foi a lógica de conseguir capturar todos erros de cada execução do cbuild produzidos pelos nossos scripts, e ao mesmo tempo que gravava esses erros em um arquivo temporário para aparecer nos logs, mandar para stderr para aparecer no terminal. Entender como o tee era a solução para isso e pesquisar como tratar ele, pois executa em background e pode haver problemas de sincronismo, também foi desafiador. Evitar loops de erro com ele e que diferentes execuções de cbuild usassem o mesmo arquivo temporário também foram complicadas soluções, que envolveram criação de novo canal, usar o mktemp corretamente e excluir o temporário no momento correto com o trap.
 
 # Testes e resultados
- Para o build, construí uma estrutura similar a descrita nas instruções da tarefa, e estressei a questão do nome, nível de otimização e caminhos parecidos, para mitigar qualquer caso de borda e entender limitações do script. Graças a decisão de usar o make para informar se aquele arquivo precisava ser atualizado, grande parte desses problemas e limitações foram mitigadas, e em todos esses testes descritos o código passou. Os arquivos de teste utilizados estão disponíveis em tests/mgolegario no github do projeto.
+ Para o build, construí uma estrutura similar a descrita nas instruções da tarefa, e estressei a questão do nome, nível de otimização e caminhos parecidos, para mitigar qualquer caso de borda e entender limitações do script. Graças a decisão de usar o make para informar se aquele arquivo precisava ser atualizado, grande parte desses problemas e limitações foram mitigadas, e em todos esses testes descritos o código passou. Os arquivos de teste utilizados estão disponíveis em tests/mgolegario no github do projeto. Mas em resumo os testes executados e que passaram foram:
+- Primeira compilação e execução do executável.
+- Repetição sem alterações
+- Alteração de uma fonte 
+- Alteração de um cabeçalho
+- Remoção de um .d 
+- Mudança de otimização
+- Falha no meio da recompilação e recuperação 
+- Renomeação de fonte e ligação apenas dos objetos das fontes atuais
+- Nomes com espaços, cifrões e outros caracteres especiais
 
 # Aprendizados e melhorias futuras
  Com certeza fazer a interligação da parte de cada um rendeu um conhecimento riquíssimo, pois percebi a real importância de se utilizar aspas em volta de variáveis, como tratar e direcionar erros e o que isso realmente significa no contexto do shell, além de procurar soluções mais eficientes para comandos de busca, como substituir grep com wc por awk, utilizar o trap ao invés de tentar achar o momento de algo acontecer na main(). Da parte de build em específico ficou o conhecimento do make, aprendizado de novas flags do gcc e o que um caminho de um arquivo representa para o sistema, pois tive que mexer muito com isso. Melhorias ficariam principalmente para o tratamento de casos mais específicos, para garantir o funcionamento ideal para qualquer projeto, e chegar mais perto do que um Makefile consegue fazer em poucas linhas.
