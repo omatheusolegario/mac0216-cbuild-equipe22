@@ -85,7 +85,7 @@ log_end() {
     echo "Erro: Não foi possível ler o arquivo de erros" >&2
     return 1
   fi
-  #o arquivo de log chama operations.log. Exemplo do formato de uma linha do log: 09/09/26 16:04:49 - Comando: build - Tempo de execução: 0.005 - Código de retorno: 0 - Erro: Não foi possível compilar o arquivo fonte
+  #o arquivo de log chama operations.log. Exemplo do formato de uma linha do log: 09/09/26 16:04:49 - Comando: build - Status: Sucesso - Tempo de execução: 0.005 - Código de retorno: 0 - Erro: Não foi possível compilar o arquivo fonte
   echo "$Log_Time_Formatted - Comando: $Log_Comando - Status: $Log_Status - Tempo de execução: $Log_Execucao - Código de retorno: $Log_Codigo - Erros: $Log_Erros" >>"$LOG_DIR/operations.log"
 
   if [[ $? -ne 0 ]]; then
